@@ -1,0 +1,38 @@
+name: Build Windows Executable
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pyinstaller piper-tts
+        
+    - name: Build with PyInstaller
+      run: |
+        python windows_packaging.py
+        
+    - name: Create ZIP archive
+      run: |
+        powershell Compress-Archive -Path dist/VoiceCloneApp -DestinationPath VoiceCloneApp.zip
+        
+    - name: Upload executable
+      uses: actions/upload-artifact@v3
+      with:
+        name: VoiceCloneApp
+        path: VoiceCloneApp.zip 
